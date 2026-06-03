@@ -1,5 +1,6 @@
 import type { ApiErrorResponse } from "../types/auth";
 import { ApiHttpError } from "./normalizeError";
+import { apiUrl } from "../config";
 
 async function readErrorBody(
   res: Response,
@@ -28,7 +29,7 @@ export async function postJson<T>(path: string, payload: unknown): Promise<T> {
 
   headers.set("Content-Type", "application/json");
 
-  const apiResponse = await fetch(`${"http://localhost:8080/"}${path}`, {
+  const apiResponse = await fetch(apiUrl(path), {
     method: "POST",
     headers: headers,
     body: JSON.stringify(payload),
@@ -64,7 +65,7 @@ export async function apiFetch<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const apiResponse = await fetch(`http://localhost:8080/api${path}`, {
+  const apiResponse = await fetch(apiUrl(`/api/${path}`), {
     ...init,
     headers,
   });
@@ -100,7 +101,7 @@ export async function apiDelete<T>(path: string, payload: unknown) {
 
   headers.set("Content-Type", "application/json");
 
-  const res = await fetch(`${"http://localhost:8080/"}${path}`, {
+  const res = await fetch(apiUrl(path), {
     method: "DELETE",
     headers: headers,
     body: JSON.stringify(payload),

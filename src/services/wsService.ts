@@ -3,6 +3,7 @@
 import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
 import type { WsSendMessage } from "../types/ws";
 import type { WsEvent } from "../types/wsEvents";
+import { WS_URL } from "../config";
 
 type Listener = (event: WsEvent) => void;
 
@@ -21,7 +22,7 @@ export function connectWs(token: string) {
   }
 
   client = new Client({
-    brokerURL: "ws://localhost:8080/ws",
+    brokerURL: WS_URL,
 
     connectHeaders: {
       Authorization: `Bearer ${token}`,
