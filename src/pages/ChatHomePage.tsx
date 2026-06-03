@@ -47,7 +47,6 @@ export function ChatHomePage({
     addGroupMember,
     removeGroupMember,
     leaveGroup,
-    deleteGroup,
   } = useChat();
 
   const { messages, loading, sendMessage } = useMessages(
@@ -148,7 +147,6 @@ export function ChatHomePage({
         onAddMember={addGroupMember}
         onRemoveMember={removeGroupMember}
         onLeaveGroup={leaveGroup}
-        onDeleteGroup={deleteGroup}
       />
     </div>
   );

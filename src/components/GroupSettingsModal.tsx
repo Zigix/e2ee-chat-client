@@ -13,7 +13,6 @@ type GroupSettingsModalProps = {
   onAddMember: (roomId: number, user: SearchUserResponse) => Promise<void>;
   onRemoveMember: (roomId: number, userId: number) => Promise<void>;
   onLeaveGroup: (roomId: number) => Promise<void>;
-  onDeleteGroup: (roomId: number) => Promise<void>;
 };
 
 export function GroupSettingsModal({
@@ -25,7 +24,6 @@ export function GroupSettingsModal({
   onAddMember,
   onRemoveMember,
   onLeaveGroup,
-  onDeleteGroup,
 }: GroupSettingsModalProps) {
   const [name, setName] = useState(room?.roomName ?? "");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -39,6 +37,7 @@ export function GroupSettingsModal({
 
   useEffect(() => {
     if (room) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName(room.roomName);
     }
   }, [room]);
@@ -90,11 +89,6 @@ export function GroupSettingsModal({
 
   async function handleLeave() {
     await onLeaveGroup(currentRoom.roomId);
-    onClose();
-  }
-
-  async function handleDelete() {
-    await onDeleteGroup(currentRoom.roomId);
     onClose();
   }
 
@@ -232,11 +226,6 @@ export function GroupSettingsModal({
             Leave group
           </button>
 
-          {isAdmin && (
-            <button className="btn btn-ghost danger strong" type="button" onClick={handleDelete}>
-              Delete group
-            </button>
-          )}
         </div>
       </div>
     </div>
