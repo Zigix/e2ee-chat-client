@@ -65,7 +65,7 @@ export async function apiFetch<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const apiResponse = await fetch(apiUrl(`/api/${path}`), {
+  const apiResponse = await fetch(apiUrl(`/api${path}`), {
     ...init,
     headers,
   });
