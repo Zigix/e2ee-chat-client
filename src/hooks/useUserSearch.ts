@@ -11,6 +11,7 @@ export function useUserSearch(open: boolean, q: string) {
 
   useEffect(() => {
     if (!open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setItems([]);
       setLoading(false);
       setError(null);

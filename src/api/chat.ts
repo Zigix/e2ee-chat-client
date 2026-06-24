@@ -9,7 +9,7 @@ import type { WsNewMessage } from "@/types/ws";
 import { apiDelete, apiFetch, postJson } from "./client";
 
 export async function createOrGetPrivateConversation(req: CreateDmRequest) {
-  return postJson<RoomDataResponse>("api/rooms/dm", req);
+  return postJson<RoomDataResponse>("api/rooms/private-chat", req);
 }
 
 export async function getRecentConversations() {

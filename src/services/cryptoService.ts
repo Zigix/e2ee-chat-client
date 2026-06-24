@@ -1,17 +1,29 @@
 // chat/services/cryptoService.ts
 
-import { decryptMessageAesGcm, encryptMessageAesGcm } from "../crypto/messageCrypto";
+import type { WsSendMessage } from "@/types/ws";
+import {
+  decryptMessageAesGcm,
+  encryptMessageAesGcm,
+  type EncryptedMessage,
+} from "../crypto/messageCrypto";
 import { getLatestRoomKey, getRoomKey } from "../state/roomKeysStore";
 import type { EncryptedMessageDto } from "../types/types";
 
-export async function encryptForRoom(roomId: number, text: string) {
+export async function encryptForRoom(
+  roomId: number,
+  text: string,
+): Promise<WsSendMessage> {
   const roomKey = getLatestRoomKey(roomId);
 
   if (!roomKey) {
     throw new Error(`Missing room key for room ${roomId}`);
   }
 
-  const encrypted = await encryptMessageAesGcm(roomKey.key, text, "");
+  const encrypted: EncryptedMessage = await encryptMessageAesGcm(
+    roomKey.key,
+    text,
+    `${roomId}${roomKey.version}`,
+  );
 
   return {
     keyVersion: roomKey.version,
@@ -21,7 +33,10 @@ export async function encryptForRoom(roomId: number, text: string) {
   };
 }
 
-export async function tryDecryptMessage(roomId: number, m: EncryptedMessageDto) {
+export async function tryDecryptMessage(
+  roomId: number,
+  m: EncryptedMessageDto,
+) {
   try {
     return await decryptForRoom(roomId, m);
   } catch {
@@ -32,29 +47,26 @@ export async function tryDecryptMessage(roomId: number, m: EncryptedMessageDto) 
 
 async function decryptForRoom(
   roomId: number,
-  message: EncryptedMessageDto
-) {
+  message: EncryptedMessageDto,
+): Promise<string> {
   const keyVersion = message.keyVersion;
 
-  if (keyVersion == null) {
+  if (keyVersion == null)
     throw new Error(`Missing key version for room ${roomId}`);
-  }
 
   const roomKey = getRoomKey(roomId, keyVersion);
 
   if (!roomKey) {
     throw new Error(
-      `Missing room key for room ${roomId}, version ${keyVersion}`
+      `Missing room key for room ${roomId}, version ${keyVersion}`,
     );
   }
 
-  if (message.ciphertextB64 == null) {
+  if (message.ciphertextB64 == null)
     throw new Error(`Missing ciphertext for room ${roomId}`);
-  }
 
-  if (message.ivB64 == null) {
+  if (message.ivB64 == null)
     throw new Error(`Missing IV for room ${roomId}`);
-  }
 
   return decryptMessageAesGcm(roomKey.key, {
     ciphertextB64: message.ciphertextB64,

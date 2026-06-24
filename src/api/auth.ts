@@ -1,12 +1,12 @@
 import { postJson } from "./client";
 import { createRegisterCrypto } from "../crypto/webcrypto";
-import type { LoginRequest, LoginUserResponse, RegisterForm, RegisterRequest } from "../types/auth";
+import type { LoginRequest, LoginUserResponse, RegisterForm, RegisterRequest as RegisterUserRequest } from "../types/auth";
 
 export async function registerUser(form: RegisterForm) {
 
   const { pubEcdhJwk, vault } = await createRegisterCrypto(form.password);
 
-  const req: RegisterRequest = {
+  const req: RegisterUserRequest = {
     email: form.email,
     username: form.username,
     password: form.password,

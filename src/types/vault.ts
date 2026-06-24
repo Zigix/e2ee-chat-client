@@ -14,7 +14,6 @@ export type RegisterCryptoResult = {
 };
 
 export type SessionKeys = {
-  mkRaw32: Uint8Array;
   mkAesKey: CryptoKey;
   ecdhPrivateKey: CryptoKey;
 };

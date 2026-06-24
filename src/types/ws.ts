@@ -4,7 +4,6 @@ export type WsEvent<T = unknown> = {
 };
 
 export type WsSendMessage = {
-  clientMessageId: string;
   keyVersion: number;
   ciphertextB64: string;
   ivB64: string;

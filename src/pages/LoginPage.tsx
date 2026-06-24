@@ -5,7 +5,6 @@ import { importEcdhPublicJwk, recoverSessionKeys } from "../crypto/webcrypto";
 import { setCryptoSession } from "../state/cryptoSession";
 
 const ACCESS_TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
 
 type Props = {
   onGoRegister: () => void;
@@ -28,7 +27,6 @@ export function LoginPage({ onGoRegister, onLoggedIn }: Props) {
       const loginUserResponse = await loginUser({ username, password });
       console.log("Login response:", loginUserResponse);
       localStorage.setItem(ACCESS_TOKEN_KEY, loginUserResponse.accessToken);
-      localStorage.setItem(REFRESH_TOKEN_KEY, loginUserResponse.refreshToken);
 
       const vault = loginUserResponse.vaultDto;
       const keys = await recoverSessionKeys(password, vault);

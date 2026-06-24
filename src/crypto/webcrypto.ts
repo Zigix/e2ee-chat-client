@@ -1,5 +1,5 @@
 import { randomBytes, bytesToB64, utf8, b64ToBytes, toAb } from "./bytes";
-import type { SessionKeys } from "../types/vault";
+import type { SessionKeys, VaultDto } from "../types/vault";
 
 async function deriveKEK(
   password: string,
@@ -163,39 +163,29 @@ export async function aesGcmDecryptBytes(
   return new Uint8Array(pt);
 }
 
-export type VaultDto = {
-  version: number;
-  kdfSaltB64: string;
-  kdfIterations: number;
-  wrappedMkB64: string;
-  wrappedMkIvB64: string;
-  wrappedEcdhPrivB64: string;
-  wrappedEcdhPrivIvB64: string;
-};
-
 export async function createRegisterCrypto(password: string): Promise<{
   pubEcdhJwk: string;
   vault: VaultDto;
 }> {
-  // 1) MK
-  const mkRaw = randomBytes(32);
-  const mkKey = await importAesKeyFromRaw(mkRaw);
+  // 1) MasterKey
+  const masterKeyRaw: Uint8Array = randomBytes(32);
+  const masterKey: CryptoKey = await importAesKeyFromRaw(masterKeyRaw);
 
   // 2) ECDH
-  const kp = await generateEcdhKeypair();
-  const pubEcdhJwk = await exportEcdhPublicJwk(kp.publicKey);
-  const privEcdhJwk = await exportEcdhPrivateJwk(kp.privateKey); // JSON string
+  const ecdhKeyPair: CryptoKeyPair = await generateEcdhKeypair();
+  const pubEcdhJwk: string = await exportEcdhPublicJwk(ecdhKeyPair.publicKey);
+  const privEcdhJwk: string = await exportEcdhPrivateJwk(ecdhKeyPair.privateKey);
 
   // 3) KEK from password (PBKDF2)
-  const kdfSalt = randomBytes(16);
-  const kdfIterations = 300_000;
-  const kek = await deriveKEK(password, kdfSalt, kdfIterations);
+  const kdfSalt: Uint8Array = randomBytes(16);
+  const kdfIterations: number = 300_000;
+  const kek: CryptoKey = await deriveKEK(password, kdfSalt, kdfIterations);
 
   // 4) wrappedMK = AES-GCM(KEK, MK)
-  const wrappedMk = await aesGcmEncrypt(kek, mkRaw);
+  const wrappedMk = await aesGcmEncrypt(kek, masterKeyRaw);
 
   // 5) wrappedEcdhPriv = AES-GCM(MK, privEcdhJwkJson)
-  const wrappedPriv = await aesGcmEncrypt(mkKey, utf8.enc(privEcdhJwk));
+  const wrappedEcdhPrivKey = await aesGcmEncrypt(masterKey, utf8.enc(privEcdhJwk));
 
   return {
     pubEcdhJwk,
@@ -205,8 +195,8 @@ export async function createRegisterCrypto(password: string): Promise<{
       kdfIterations,
       wrappedMkB64: bytesToB64(wrappedMk.ciphertext),
       wrappedMkIvB64: bytesToB64(wrappedMk.iv),
-      wrappedEcdhPrivB64: bytesToB64(wrappedPriv.ciphertext),
-      wrappedEcdhPrivIvB64: bytesToB64(wrappedPriv.iv),
+      wrappedEcdhPrivB64: bytesToB64(wrappedEcdhPrivKey.ciphertext),
+      wrappedEcdhPrivIvB64: bytesToB64(wrappedEcdhPrivKey.iv),
     },
   };
 }
@@ -216,22 +206,21 @@ export async function recoverSessionKeys(
   vault: VaultDto,
 ): Promise<SessionKeys> {
   // (1) base64 to bytes
-  console.log("Vault DTO:", vault);
-  const salt = b64ToBytes(vault.kdfSaltB64);
-  const wrappedMk = b64ToBytes(vault.wrappedMkB64);
-  const wrappedMkIv = b64ToBytes(vault.wrappedMkIvB64);
+  const salt: Uint8Array = b64ToBytes(vault.kdfSaltB64);
+  const wrappedMk: Uint8Array = b64ToBytes(vault.wrappedMkB64);
+  const wrappedMkIv: Uint8Array = b64ToBytes(vault.wrappedMkIvB64);
 
-  const wrappedPriv = b64ToBytes(vault.wrappedEcdhPrivB64);
-  const wrappedPrivIv = b64ToBytes(vault.wrappedEcdhPrivIvB64);
+  const wrappedPriv: Uint8Array = b64ToBytes(vault.wrappedEcdhPrivB64);
+  const wrappedPrivIv: Uint8Array = b64ToBytes(vault.wrappedEcdhPrivIvB64);
 
   // (2) KEK = PBKDF2(password, salt, iterations)
-  const kek = await deriveKEK(password, salt, vault.kdfIterations);
+  const kek: CryptoKey = await deriveKEK(password, salt, vault.kdfIterations);
 
   // (3) MK = AES-GCM-decrypt(KEK, wrappedMK)
   const mkRaw32 = await aesGcmDecryptBytes(kek, wrappedMkIv, wrappedMk);
 
   // (4) Import MK to AES key
-  const mkAesKey = await importAesKeyFromRaw(mkRaw32);
+  const mkAesKey: CryptoKey = await importAesKeyFromRaw(mkRaw32);
 
   // (5) Decrypt privECDH JWK JSON
   const privJwkBytes = await aesGcmDecryptBytes(
@@ -244,5 +233,5 @@ export async function recoverSessionKeys(
   // (6) Import ECDH private key to CryptoKey
   const ecdhPrivateKey: CryptoKey = await importEcdhPrivateJwk(privJwkJson);
 
-  return { mkRaw32, mkAesKey, ecdhPrivateKey };
+  return { mkAesKey, ecdhPrivateKey };
 }

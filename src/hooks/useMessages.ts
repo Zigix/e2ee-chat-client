@@ -20,9 +20,10 @@ export function useMessages(
   const [messages, setMessages] = useState<UiMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // 📥 1. LOAD HISTORY
+  // 1. LOAD HISTORY
   useEffect(() => {
     if (!roomId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessages([]);
       return;
     }
@@ -62,7 +63,7 @@ export function useMessages(
     };
   }, [roomId, myUserId]);
 
-  // 📡 2. REAL-TIME WS
+  // 2. REAL-TIME WS
   useEffect(() => {
     if (!roomId) return;
     if (!wsConnected) return;
@@ -71,7 +72,7 @@ export function useMessages(
       return;
     }
 
-    // 👉 subskrypcja STOMP dla tego roomu
+    // STOMP subscription for this room
     subscribeToRoom(roomId);
 
     const unsubscribe = subscribeToWs(async (event) => {
@@ -102,7 +103,7 @@ export function useMessages(
     };
   }, [roomId, myUserId, wsConnected, activeMembership]);
 
-  // 📤 3. SEND MESSAGE
+  // 3. SEND MESSAGE
   async function sendMessage(text: string) {
     if (!roomId) return;
 
@@ -110,7 +111,6 @@ export function useMessages(
       const encrypted = await encryptForRoom(roomId, text);
 
       sendRoomMessage(roomId, {
-        clientMessageId: crypto.randomUUID(),
         ...encrypted,
       });
     } catch (e) {
