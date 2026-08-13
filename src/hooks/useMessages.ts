@@ -151,7 +151,7 @@ async function mapMessageDtoToUiMessage(
       roomId: m.roomId,
       type: "CHAT",
       senderId: m.senderId!,
-      sender: m.sender!,
+      senderUsername: m.senderUsername!,
       createdAt: m.createdAt,
       fromMe: m.senderId === myUserId,
       text: messageText,

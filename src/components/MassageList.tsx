@@ -39,7 +39,7 @@ export function MessageList({ messages, loading }: MessageListProps) {
               className={`message-wrap ${message.fromMe ? "me" : "them"}`}
             >
               <div className="message-meta">
-                <span className="message-author">{message.sender}</span>
+                <span className="message-author">{message.senderUsername}</span>
                 <span className="message-time">
                   {formatMessageTime(message.createdAt)}
                 </span>

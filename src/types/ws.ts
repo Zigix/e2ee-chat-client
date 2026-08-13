@@ -14,7 +14,7 @@ export type WsNewMessage = {
   id: number;
   roomId: number;
   senderId: number;
-  sender: string;
+  senderUsername: string;
   createdAt: string;
   keyVersion: number;
   ciphertextB64: string;

@@ -76,7 +76,7 @@ export type WsEvent =
         id: number;
         roomId: number;
         senderId: number | null;
-        sender: string | null;
+        senderUsername: string | null;
         createdAt: string;
         keyVersion: number | null;
         ciphertextB64: string | null;

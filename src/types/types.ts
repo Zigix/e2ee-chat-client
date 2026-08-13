@@ -2,7 +2,7 @@ export type EncryptedMessageDto = {
   id: number;
   roomId: number;
   senderId: number | null;
-  sender: string | null;
+  senderUsername: string | null;
   createdAt: string;
   keyVersion: number | null;
   ciphertextB64: string | null;
@@ -17,7 +17,7 @@ export type UiChatMessage = {
   roomId: number;
   type: "CHAT";
   senderId: number;
-  sender: string;
+  senderUsername: string;
   text: string;
   createdAt: string;
   fromMe: boolean;
